@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science's Madness - Ultimate Science Laboratory Quest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #030712;
+            color: #f8fafc;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        .font-game {
+            font-family: 'Fredoka', cursive;
+        }
+        .glow-title {
+            text-shadow: 0 0 20px rgba(6, 182, 212, 0.7), 0 0 40px rgba(168, 85, 247, 0.5);
+        }
+        .lab-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .lab-card-glow {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.15);
+        }
+        .btn-bounce {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .btn-bounce:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.5);
+        }
+        .btn-bounce:active {
+            transform: translateY(1px) scale(0.98);
+        }
+        /* Custom Science Grid Pattern Background */
+        .science-grid {
+            background-image: 
+                linear-gradient(to right, rgba(30, 41, 59, 0.4) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(30, 41, 59, 0.4) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        canvas {
+            touch-action: none;
+        }
+        /* Scrollbar aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="science-grid min-h-screen flex flex-col justify-between">
+
+    <header class="w-full lab-card sticky top-0 z-50 px-4 py-3 border-b border-cyan-500/20">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="app.showScreen('welcome')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-sky-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/30">
+                    ⚛️
+                </div>
+                <div>
+                    <h1 class="font-game text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-200 to-purple-400">
+                        SCIENCE'S MADNESS
+                    </h1>
+                    <p class="text-xs text-cyan-400/80 font-mono tracking-wider">ADVANCED STEM LABORATORY</p>
+                </div>
+            </div>
+
+            <!-- User Info Badge -->
+            <div id="header-user-info" class="hidden flex items-center gap-3 bg-slate-900/90 px-4 py-1.5 rounded-full border border-cyan-500/30 shadow-md">
+                <div class="text-xs sm:text-sm">
+                    <span id="user-display-name" class="font-bold text-cyan-300">Scientist</span>
+                    <span class="text-slate-400">| Gr.<span id="user-display-grade">7</span> (<span id="user-display-section">Alpha</span>)</span>
+                </div>
+                <div class="flex items-center gap-1 bg-amber-500/20 px-2.5 py-0.5 rounded-full text-amber-400 font-bold text-xs border border-amber-500/30">
+                    🧪 <span id="user-display-score">0</span> pts
+                </div>
+                <button onclick="app.resetProfile()" class="text-xs text-rose-400 hover:text-rose-300 ml-1 font-mono">EXIT</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto w-full p-4 flex-grow flex flex-col justify-center my-4">
+
+        <!-- SCREEN: WELCOME & REGISTRATION -->
+        <section id="screen-welcome" class="w-full max-w-md mx-auto lab-card lab-card-glow p-6 md:p-8 rounded-3xl shadow-2xl text-center space-y-6">
+            <div class="inline-block p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-5xl mb-1 animate-pulse">
+                🧬
+            </div>
+            <div>
+                <h2 class="text-3xl font-game font-bold glow-title text-cyan-300">Lab Access Portal</h2>
+                <p class="text-slate-300 text-sm mt-2">Enter your researcher credentials to access the 4 Quarters, 16 Lessons, and 160 Challenging Questions!</p>
+            </div>
+
+            <form id="profile-form" onsubmit="app.saveProfile(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-mono font-semibold text-cyan-400 uppercase tracking-widest mb-1">Researcher Name</label>
+                    <input type="text" id="input-name" required placeholder="e.g. Marie Curie" class="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-mono font-semibold text-cyan-400 uppercase tracking-widest mb-1">Grade Level</label>
+                        <select id="input-grade" required class="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 text-sm">
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono font-semibold text-cyan-400 uppercase tracking-widest mb-1">Section</label>
+                        <input type="text" id="input-section" required placeholder="e.g. Newton" class="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 text-sm">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-cyan-500 via-sky-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-game font-bold text-lg rounded-2xl shadow-lg shadow-cyan-500/20 btn-bounce mt-4">
+                    INITIATE RESEARCH 🚀
+                </button>
+            </form>
+        </section>
+
+        <!-- SCREEN: CURRICULUM HUB (4 QUARTERS, 4 LESSONS EACH) -->
+        <section id="screen-hub" class="hidden space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center lab-card p-6 rounded-3xl gap-4">
+                <div>
+                    <span id="hub-grade-badge" class="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-xs font-mono font-bold uppercase tracking-widest border border-cyan-500/30">Grade 7 Syllabus</span>
+                    <h2 class="text-3xl font-game font-bold text-white mt-2">Laboratory Curriculum Map</h2>
+                    <p class="text-slate-400 text-sm">Complete all 4 lessons per quarter. Each lesson contains 10 rigorous science questions.</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="bg-slate-950/80 px-4 py-2.5 rounded-2xl border border-slate-800 text-center">
+                        <span class="block text-xs font-mono text-slate-400">Quarters Done</span>
+                        <span id="hub-completion" class="text-xl font-bold text-emerald-400">0/4 Qtrs</span>
+                    </div>
+                    <div class="bg-slate-950/80 px-4 py-2.5 rounded-2xl border border-slate-800 text-center">
+                        <span class="block text-xs font-mono text-slate-400">Total Score</span>
+                        <span id="hub-score" class="text-xl font-bold text-amber-400">0 pts</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quarter Selector Tabs -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="quarter-tabs">
+                <!-- Quarter tabs generated dynamically -->
+            </div>
+
+            <!-- Active Quarter Details & Lessons Container -->
+            <div id="quarter-detail-card" class="lab-card p-6 md:p-8 rounded-3xl space-y-6">
+                <!-- Dynamically populated lessons list for the selected quarter -->
+            </div>
+        </section>
+
+        <!-- SCREEN: LESSON LESSON QUIZ (10 QUESTIONS) -->
+        <section id="screen-quiz" class="hidden space-y-6 max-w-3xl mx-auto">
+            <div class="lab-card p-4 rounded-2xl flex justify-between items-center">
+                <div>
+                    <span id="quiz-header-badge" class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest">Quarter 1 | Lesson 1</span>
+                    <h3 id="quiz-lesson-title" class="text-lg font-game text-white">Lesson Title</h3>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs font-mono text-slate-400 block">Question</span>
+                    <span id="quiz-progress-text" class="text-lg font-bold text-cyan-300">1/10</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                <div id="quiz-progress-bar" class="bg-gradient-to-r from-cyan-400 to-purple-500 h-full w-0 transition-all duration-300"></div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="lab-card p-6 md:p-8 rounded-3xl space-y-6 shadow-2xl">
+                <p id="quiz-question-text" class="text-xl font-semibold text-slate-100 leading-relaxed">Loading question...</p>
+
+                <div id="quiz-options" class="grid grid-cols-1 gap-3">
+                    <!-- Options dynamically inserted -->
+                </div>
+
+                <!-- Feedback Banner -->
+                <div id="quiz-feedback" class="hidden p-4 rounded-2xl border text-sm font-semibold flex justify-between items-center">
+                    <span id="quiz-feedback-text"></span>
+                    <button id="quiz-next-btn" onclick="app.nextQuestion()" class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl btn-bounce">
+                        Next ➔
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN: MINI-GAME SIMULATOR -->
+        <section id="screen-minigame" class="hidden space-y-4 max-w-3xl mx-auto">
+            <div class="lab-card p-4 rounded-2xl flex justify-between items-center">
+                <div>
+                    <span id="mg-subtitle" class="text-xs font-mono font-bold text-purple-400 uppercase tracking-widest">Quarter Interactive Simulation</span>
+                    <h3 id="mg-title" class="text-xl font-game text-white">Mini-Game Title</h3>
+                </div>
+                <button onclick="app.exitMiniGame()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs text-slate-300 font-mono">
+                    ✕ Back to Hub
+                </button>
+            </div>
+
+            <div class="lab-card p-4 rounded-3xl flex flex-col items-center justify-center relative overflow-hidden min-h-[400px]">
+                <canvas id="game-canvas" class="rounded-2xl bg-slate-950 border border-cyan-500/30 w-full max-w-[600px] h-[340px] shadow-inner"></canvas>
+
+                <!-- Instructions Overlay -->
+                <div id="mg-instructions" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center space-y-4 backdrop-blur-md">
+                    <div class="text-4xl animate-bounce">🔬</div>
+                    <h4 id="mg-inst-title" class="text-2xl font-game font-bold text-cyan-300">Simulation Protocol</h4>
+                    <p id="mg-inst-body" class="text-sm text-slate-300 max-w-md leading-relaxed">Instructions here...</p>
+                    <button onclick="app.startMiniGame()" class="px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-game font-bold rounded-2xl btn-bounce text-lg shadow-lg shadow-emerald-500/20">
+                        EXECUTE SIMULATION 🧪
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-summary" class="hidden space-y-6 max-w-2xl mx-auto text-center">
+            <div class="lab-card lab-card-glow p-8 rounded-3xl border border-cyan-500/40 space-y-6 shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
+                <div class="inline-block p-4 bg-amber-500/20 text-amber-400 rounded-2xl text-5xl border border-amber-500/30">
+                    🏆
+                </div>
+                <h2 class="text-3xl font-game font-bold text-white glow-title">Laboratory Mastery Achieved!</h2>
+                <p class="text-slate-300 text-sm">Phenomenal work! You have successfully completed all 4 Quarters, 16 Lessons, and 160 Questions for your grade level.</p>
+
+                <div class="bg-slate-950/90 p-6 rounded-2xl border border-slate-800 text-left space-y-3 font-mono text-sm">
+                    <div class="flex justify-between border-b border-slate-900 pb-2">
+                        <span class="text-slate-400">Lead Researcher:</span>
+                        <span id="sum-name" class="font-bold text-cyan-300"></span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-900 pb-2">
+                        <span class="text-slate-400">Grade & Section:</span>
+                        <span id="sum-grade-sec" class="font-bold text-white"></span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-900 pb-2">
+                        <span class="text-slate-400">Total Questions Completed:</span>
+                        <span class="font-bold text-emerald-400">160 / 160</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Total Score Earned:</span>
+                        <span id="sum-score" class="font-bold text-amber-400 text-lg">0 pts</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 justify-center pt-2">
+                    <button onclick="window.print()" class="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-game font-bold rounded-xl btn-bounce flex items-center gap-2 text-sm shadow-lg shadow-purple-600/30">
+                        🖨️ Print Certificate
+                    </button>
+                    <button onclick="app.showScreen('hub')" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-game font-bold rounded-xl btn-bounce text-sm">
+                        Review Modules 🧬
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="w-full text-center py-4 text-xs font-mono text-cyan-500/60 border-t border-cyan-500/10 lab-card">
+        SCIENCE'S MADNESS ADVANCED CURRICULUM • GRADES 7–12 STEM LAB
+    </footer>
+
+    <script>
+        const CURRICULUM = {
+            7: {
+                title: "General Science & Integrated Science",
+                quarters: [
+                    {
+                        title: "Quarter 1: Matter & Scientific Methods",
+                        miniGame: "fault",
+                        lessons: [
+                            {
+                                title: "Lesson 1: The Scientific Method",
+                                questions: [
+                                    { q: "What is the first step in the scientific method?", a: ["Formulating Hypothesis", "Making Observations", "Conducting Experiment", "Stating Conclusion"], c: 1 },
+                                    { q: "An educated guess that can be tested is called a:", a: ["Theory", "Law", "Hypothesis", "Observation"], c: 2 },
+                                    { q: "What variable is deliberately changed by the researcher?", a: ["Dependent variable", "Independent variable", "Controlled variable", "Constant"], c: 1 },
+                                    { q: "Which tool is best for measuring precise liquid volumes in the lab?", a: ["Beaker", "Graduated Cylinder", "Erlenmeyer Flask", "Test Tube"], c: 1 },
+                                    { q: "Data that consists of numbers and measurements is called:", a: ["Qualitative data", "Quantitative data", "Inference", "Hypothesis"], c: 1 },
+                                    { q: "What should you do immediately if chemicals splash in your eyes?", a: ["Rub eyes", "Use eyewash station", "Wait for it to dry", "Cover with hands"], c: 1 },
+                                    { q: "A well-tested explanation that unifies a broad range of observations is a:", a: ["Scientific Law", "Scientific Theory", "Guess", "Procedure"], c: 1 },
+                                    { q: "What describes a factor that remains unchanged throughout an experiment?", a: ["Control variable", "Independent variable", "Dependent variable", "Variable"], c: 0 },
+                                    { q: "Which of the following is a qualitative observation?", a: ["The solution is 25°C", "The beaker holds 50mL", "The liquid turned bright blue", "The mass is 10g"], c: 2 },
+                                    { q: "After analyzing data, scientists communicate results through:", a: ["Hiding notes", "Scientific reports", "Guesswork", "Deleting data"], c: 1 }
+                                ]
+                            },
+                            {
+                                title: "Lesson 2: Solutions & Concentrations",
+                                questions: [
+                                    { q: "What is a homogeneous mixture where solute dissolves in solvent?", a: ["Suspension", "Colloid", "Solution", "Element"], c: 2 },
+                                    { q: "In a saltwater solution, salt acts as the:", a: ["Solvent", "Solute", "Colloid", "Suspension"], c: 1 },
+                                    { q: "What substance dissolves the solute in a solution?", a: ["Solvent", "Solute", "Precipitate", "Residue"], c: 0 },
+                                    { q: "A solution that holds the maximum amount of dissolved solute at a given temperature is:", a: ["Unsaturated", "Saturated", "Supersaturated", "Dilute"], c: 1 },
+                                    { q: "Adding more solvent to a solution causes it to become more:", a: ["Concentrated", "Diluted", "Saturated", "Viscous"], c: 1 },
+                                    { q: "Which mixture has particles that settle out over time?", a: ["Solution", "Colloid", "Suspension", "Alloy"], c: 2 },
+                                    { q: "Milk is an example of what type of heterogeneous-appearing mixture?", a: ["Solution", "Colloid", "Pure substance", "Element"], c: 1 },
+Compose
+Write to Troy Phillip J. Rubio
